@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -264,7 +265,8 @@ fun ContainerCard() {
     Box (
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
+            .fillMaxSize()
+//            .clip(RoundedCornerShape(16.dp))
             .paint(
                 painterResource(id = R.drawable.background_container_card),
                 contentScale = ContentScale.FillBounds
@@ -399,10 +401,10 @@ fun MyApp1() {
                     startDestination = items[0].title,
                     modifier = Modifier.padding(it)
                 ) {
-                    composable("Home") { HomeScreen() }
+                    composable("Home") { ContainerCard() }
                     composable("Daily Activity") { DailyActivityScreen() }
                     composable("Gallery") { GalleryScreen() }
-                    composable("Music Favorite & Video") { MusicFavoriteVideoScreen() }
+                    composable("Music Favorite & Video") { MusicFavoriteScreen() }
                 }
             }
         }
@@ -428,8 +430,41 @@ fun HomeScreen() {
     }
 }
 
+data class DailyActivity(
+    val time: String,
+    val title: String,
+    val description: String
+)
+
+@Composable
+fun DailyActivityItem(activity: DailyActivity) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .background(MaterialTheme.colorScheme.surface)
+            .clip(RoundedCornerShape(8.dp))
+            .padding(16.dp)
+    ) {
+        Text(text = activity.time, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = activity.title, style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = activity.description, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+@Preview(showBackground = true, name = "Daily Acitivity")
 @Composable
 fun DailyActivityScreen() {
+    val dailyActivities = listOf(
+        DailyActivity("05:00 AM", "Bangun", "Sholat brother."),
+        DailyActivity("08:00 AM", "Kerja", "Berangkat kerja"),
+        DailyActivity("12:00 AM", "Istirahat", "Makan berat gais"),
+        DailyActivity("18:00 PM", "Pulang Kerja", "Siap - siap ngampus juga."),
+        DailyActivity("18:30 PM", "Ngampus", "Belajar."),
+        DailyActivity("22:00 PM", "Pulang Ngampus", "Akhirnya..."),
+        DailyActivity("23:00 PM", "Sampai Rumah", "Time to go to bed."),
+    )
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -437,7 +472,15 @@ fun DailyActivityScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Daily Activity Screen", fontSize = 24.sp)
+        Text(text = "Daily Activity", fontSize = 24.sp)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(8.dp),
+        ) {
+            items(dailyActivities) { activity ->
+                DailyActivityItem(activity)
+            }
+        }
     }
 }
 
@@ -510,7 +553,9 @@ data class VideoItem(val imageResId: Int, val title: String)
 fun MusicListItem(musicItem: MusicItem, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .padding(8.dp),
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(16.dp, 0.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -518,13 +563,14 @@ fun MusicListItem(musicItem: MusicItem, modifier: Modifier = Modifier) {
             painter = painterResource(id = musicItem.imageResId),
             contentDescription = null,
             modifier = Modifier
-                .size(128.dp)
+                .size(156.dp)
                 .clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Crop
         )
         Text(text = musicItem.artist, fontSize = 16.sp)
     }
 }
+
 
 @Composable
 fun VideoListItem(videoItem: VideoItem) {
@@ -564,8 +610,12 @@ fun MusicFavoriteScreen() {
         MusicItem(R.drawable.kunto_aji,  "Kunto Aji"),
     )
 
-    val videoItems = listOf<VideoItem>(
-        VideoItem(R.drawable.profil_cihuy, "Pewdiepie")
+    val videoItems = listOf<MusicItem>(
+        MusicItem(R.drawable.pewdiepie,  "Pewdiepie"),
+        MusicItem(R.drawable.traversy_media,  "Traversy Media"),
+        MusicItem(R.drawable.pjz,  "Programmer Zaman Now"),
+        MusicItem(R.drawable.onepiece,  "One Piece"),
+        MusicItem(R.drawable.ghibli,  "Ghibli Movie"),
     )
 
     Column(
@@ -608,8 +658,15 @@ fun MusicFavoriteScreen() {
                     fontWeight = FontWeight.Bold
                 )
             }
-            items(videoItems) { videoItem ->
-                VideoListItem(videoItem = videoItem)
+            items(videoItems.chunked(2)) { rowItems ->
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    for (item in rowItems) {
+                        MusicListItem(musicItem = item, modifier = Modifier.weight(1f))
+                    }
+                    if (rowItems.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
             }
         }
     }
