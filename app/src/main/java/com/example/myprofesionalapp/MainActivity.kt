@@ -5,10 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,9 +18,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
@@ -73,6 +79,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.myprofesionalapp.ui.theme.MyProfesionalAppTheme
+import com.google.accompanist.flowlayout.FlowRow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -81,18 +88,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
-
-//            MyApp1()
             MyApp()
-//            MyProfesionalAppTheme {
-//                // A surface container using the 'background' color from the theme
-//                Surface(
-//                    modifier = Modifier.padding(12.dp),
-//                ) {
-////                    ContainerCard()
-//                    ContainerCardLazyColumn()
-//                }
-//            }
         }
     }
 }
@@ -104,11 +100,6 @@ fun MyApp() {
         composable("splash") { SplashScreen(navController) }
         composable("main") {
             MyApp1()
-//            Surface(
-//                    modifier = Modifier.padding(12.dp),
-//                ) {
-//                    ContainerCard()
-//                }
         }
     }
 }
@@ -417,61 +408,6 @@ fun MyApp1() {
         }
     }
 }
-
-//@Composable
-//fun DrawerFooter(
-//) {
-//    val uriHandler = LocalUriHandler.current
-//
-//    Column(
-//        horizontalAlignment = Alignment.CenterHorizontally,
-//        verticalArrangement = Arrangement.Bottom,
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(bottom = 10.dp)
-//    ) {
-//
-//
-//        Spacer(modifier = Modifier.height(48.dp))
-//        Text(
-//            text = "Contact Creator",
-//            fontStyle = FontStyle.Italic,
-//            fontWeight = FontWeight.SemiBold,
-//        )
-//
-//        LazyRow() {
-//            item {
-//                IconButton(onClick = { }) {
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.ic_linkedin),
-//                        modifier = Modifier.size(18.dp),
-//                        contentDescription = "Linkedin"
-//                    )
-//                }
-//                Spacer(modifier = Modifier.size(12.dp))
-//
-//                IconButton(onClick = { }) {
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.ic_github),
-//                        modifier = Modifier.size(18.dp),
-//                        contentDescription = "Github"
-//                    )
-//                }
-//
-//                Spacer(modifier = Modifier.size(12.dp))
-//
-//                IconButton(onClick = { }) {
-//                    Icon(
-//                        painter = painterResource(id = R.drawable.ic_twitter),
-//                        modifier = Modifier.size(18.dp),
-//                        contentDescription = "Twitter"
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
-
 data class DrawerItem(
     val title: String,
     val selectedIcon: ImageVector,
@@ -506,7 +442,36 @@ fun DailyActivityScreen() {
 }
 
 @Composable
+fun ImageListItem(galleryItem: GalleryItem) {
+    Text(
+        text = galleryItem.title,
+        modifier = Modifier.padding(8.dp)
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Image(
+        painter = painterResource(id = galleryItem.imageResId),
+        contentDescription = null,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+            .padding(8.dp),
+        contentScale = ContentScale.Crop
+    )
+}
+
+data class GalleryItem(val imageResId: Int, val title: String)
+
+@Preview(showBackground = true, name="Gallery Screen")
+@Composable
 fun GalleryScreen() {
+    val galleryItems = listOf(
+        GalleryItem(R.drawable.portfolio1, "Jagodagang (www.jagodagang.com)"),
+        GalleryItem(R.drawable.portfolio2, "Themesawesome (www.themesawesome.com)"),
+        GalleryItem(R.drawable.portfolio3, "Calegpro (www.calegpro.com)"),
+        GalleryItem(R.drawable.portfolio4, "Paragliding Interlaken (www.paragliding-interlaken.ch)"),
+        // Add more items as needed
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -514,7 +479,14 @@ fun GalleryScreen() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text(text = "Gallery Screen", fontSize = 24.sp)
+        Text(text = "My Portofolio", fontSize = 24.sp)
+        Spacer(modifier = Modifier.size(32.dp))
+        LazyColumn(
+        ) {
+            items(galleryItems) { imageResId ->
+                ImageListItem(galleryItem = imageResId)
+            }
+        }
     }
 }
 
@@ -528,5 +500,117 @@ fun MusicFavoriteVideoScreen() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(text = "Music Favorite & Video Screen", fontSize = 24.sp)
+    }
+}
+
+data class MusicItem(val imageResId: Int, val artist: String)
+data class VideoItem(val imageResId: Int, val title: String)
+
+@Composable
+fun MusicListItem(musicItem: MusicItem, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Image(
+            painter = painterResource(id = musicItem.imageResId),
+            contentDescription = null,
+            modifier = Modifier
+                .size(128.dp)
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop
+        )
+        Text(text = musicItem.artist, fontSize = 16.sp)
+    }
+}
+
+@Composable
+fun VideoListItem(videoItem: VideoItem) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Image(
+            painter = painterResource(id = videoItem.imageResId),
+            contentDescription = null,
+            modifier = Modifier
+                .size(64.dp)
+                .clip(RoundedCornerShape(8.dp)),
+            contentScale = ContentScale.Crop
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column(
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .weight(1f)
+                .align(Alignment.CenterVertically)
+        ) {
+            Text(text = videoItem.title)
+        }
+    }
+}
+
+@Preview(showBackground = true, name="MusicFavoriteScreen")
+@Composable
+fun MusicFavoriteScreen() {
+    val musicItems = listOf(
+        MusicItem(R.drawable.nadin_amizah,  "Nadin Amizah"),
+        MusicItem(R.drawable.sal_priadi,  "Sal Priadi"),
+        MusicItem(R.drawable.hindia,  "Hindia"),
+        MusicItem(R.drawable.ichiko_aoba,  "Ichiko Aoba"),
+        MusicItem(R.drawable.kunto_aji,  "Kunto Aji"),
+    )
+
+    val videoItems = listOf<VideoItem>(
+        VideoItem(R.drawable.profil_cihuy, "Pewdiepie")
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(text = "Music and Video Favorite", fontSize = 24.sp)
+        Spacer(modifier = Modifier.size(32.dp))
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                Text(
+                    text = "Music Favorites",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            items(musicItems.chunked(2)) { rowItems ->
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    for (item in rowItems) {
+                        MusicListItem(musicItem = item, modifier = Modifier.weight(1f))
+                    }
+                    if (rowItems.size == 1) {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                }
+            }
+            item {
+                Text(
+                    text = "Video Favorites",
+                    fontSize = 16.sp,
+                    modifier = Modifier.padding(16.dp),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            items(videoItems) { videoItem ->
+                VideoListItem(videoItem = videoItem)
+            }
+        }
     }
 }
